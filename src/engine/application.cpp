@@ -6,9 +6,22 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void process_input(GLFWwindow* window);
 
-application::application()
+application::application(const char* path)
 {
+    std::filesystem::path current_path = path;
+    while (!current_path.empty())
+    {
+        std::filesystem::path target_path = current_path / "data";
+        if(std::filesystem::exists(target_path) && std::filesystem::is_directory(target_path))
+        {
+            current_path = target_path;
+            break;
+        }
 
+        current_path = current_path.parent_path();
+    }
+
+    data_path = current_path;
 }
 
 application::~application()
