@@ -1,4 +1,11 @@
+#include "editor/imgui/imgui_impl_glfw.h"
+#include "editor/imgui/imgui_impl_opengl3.h"
 #include "beskar_engine/application.h"
+#include "beskar_engine/resource_manager.h"
+
+#include <iostream>
+#include <filesystem>
+#include <fstream>
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -22,11 +29,54 @@ application::application(const char* path)
     }
 
     data_path = current_path;
+
+    resource_manager rm;
+    rm.data_path = data_path;
+    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{rm.data_path})
+    {
+        //std::cout << dir_entry << '\n';
+        if (dir_entry.is_directory())
+        {
+            //std::cout << "is directory" << '\n';
+            continue;
+        }
+
+        std::filesystem::path asset_path = dir_entry.path();
+        auto extension = asset_path.extension().string();
+        if(extension == ".meta")
+        {
+            //std::cout << "is meta file" << '\n';
+            continue;
+        }
+
+//        if (std::filesystem::exists(asset_path + ".meta"))
+//        {
+//            std::cout << "already has a meta file" << '\n';
+//            continue;
+//        }
+
+        auto filename = asset_path.stem().string();
+        auto filepath = asset_path.string();
+
+        asset_path += ".meta";
+        std::ofstream metadata (asset_path);
+        metadata << "metaversion: " << 0 << "\n";
+        std::filesystem::file_time_type filetime = std::filesystem::last_write_time(asset_path);
+        long long int lastwritetime = filetime.time_since_epoch().count();
+        metadata << "timecreated: " << lastwritetime << "\n";
+        metadata << "name: " << filename << "\n";
+        metadata << "file: " << filepath << "\n";
+        metadata.close();
+    }
 }
 
 application::~application()
 {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
+    glfwTerminate();
 }
 
 void application::run(int width, int height)
@@ -54,29 +104,39 @@ void application::run(int width, int height)
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
     application::initialize();
 
     float delta_time = 0.0f, last_frame = 0.0f;
-
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     while (glfwWindowShouldClose(window) == false)
     {
+        glfwPollEvents();
         float currentFrame = static_cast<float>(glfwGetTime());
         delta_time = currentFrame - last_frame;
         last_frame = currentFrame;
 
         process_input(window);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        application::gui();
+        ImGui::Render();
+
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         application::update(delta_time);
 
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
-    glfwTerminate();
+    glfwDestroyWindow(window);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
