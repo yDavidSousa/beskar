@@ -1,4 +1,5 @@
 #include "beskar_engine/resource_manager.h"
+#include "beskar_engine/guid.h"
 
 #include <iostream>
 #include <filesystem>
@@ -32,6 +33,14 @@ int main(int argc, char ** argv)
         }
 
         std::filesystem::path asset_path = dir_entry.path();
+
+#if __APPLE__
+        if(asset_path.filename() == ".DS_Store")
+        {
+            continue;
+        }
+#endif
+
         std::string extension = asset_path.extension().string();
         if(extension == ".meta")
         {
@@ -39,11 +48,11 @@ int main(int argc, char ** argv)
             continue;
         }
 
-//        if (std::filesystem::exists(asset_path + ".meta"))
-//        {
-//            std::cout << "already has a meta file" << '\n';
-//            continue;
-//        }
+        if (std::filesystem::exists(asset_path.string() + ".meta"))
+        {
+            //std::cout << "already has a meta file" << '\n';
+            continue;
+        }
 
         std::string filename = asset_path.stem().string();
         std::string filepath = asset_path.string();
@@ -52,6 +61,9 @@ int main(int argc, char ** argv)
         std::ofstream metadata (asset_path);
         {
             metadata << "metaversion: " << 0 << "\n";
+
+            guid guid = guid_generator::new_guid();
+            metadata << "guid: " << guid.str() << "\n";
 
             std::filesystem::file_time_type filetime = std::filesystem::last_write_time(asset_path);
             long int lastwritetime = filetime.time_since_epoch().count();
