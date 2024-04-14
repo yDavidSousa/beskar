@@ -1,5 +1,3 @@
-add_executable(beskar_editor
-        "main.cpp"
-)
+cmake_minimum_required (VERSION 3.5)
 
-target_link_libraries(beskar_editor PRIVATE beskar_engine)
+project (beskar_editor)

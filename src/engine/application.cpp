@@ -1,5 +1,9 @@
+#if BESKAR_EDITOR
+#include "beskar_editor/editor.h"
 #include "editor/imgui/imgui_impl_glfw.h"
 #include "editor/imgui/imgui_impl_opengl3.h"
+#endif
+
 #include "beskar_engine/application.h"
 
 #include "GL/glew.h"
@@ -8,7 +12,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void process_input(GLFWwindow* window);
 
-application::application(const char* path)
+application::application(const char* path, int width, int height) : width(width), height(height)
 {
     std::filesystem::path current_path = path;
     while (current_path.empty() == false)
@@ -28,14 +32,16 @@ application::application(const char* path)
 
 application::~application()
 {
+#if BESKAR_EDITOR
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+#endif
 
     glfwTerminate();
 }
 
-void application::run(int width, int height)
+void application::run()
 {
     GLFWwindow* window;
 
@@ -60,10 +66,12 @@ void application::run(int width, int height)
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+#if BESKAR_EDITOR
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
+#endif
 
     application::initialize();
 
@@ -78,15 +86,19 @@ void application::run(int width, int height)
 
         process_input(window);
 
+#if BESKAR_EDITOR
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         application::gui();
         ImGui::Render();
+#endif
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+#if BESKAR_EDITOR
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
         application::update(delta_time);
 
         glfwSwapBuffers(window);
@@ -114,4 +126,16 @@ void process_input(GLFWwindow* window)
 //        camera_position -= cameraSpeed * glm::vec3(-1.0f, 0.0f, 0.0f);
 //    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 //        camera_position += cameraSpeed * glm::vec3(-1.0f, 0.0f, 0.0f);
+}
+
+int main(int argc, char** argv)
+{
+#if BESKAR_EDITOR
+    cache_update(argv[0]);
+#endif
+
+    application* app = beskar_main(argc, argv);
+
+    app->run();
+    delete app;
 }

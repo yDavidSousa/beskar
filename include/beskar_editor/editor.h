@@ -1,13 +1,13 @@
-#include "beskar_engine/resource_manager.h"
-#include "beskar_engine/guid.h"
+#ifndef BESKAR_EDITOR_H
+#define BESKAR_EDITOR_H
 
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 
-int main(int argc, char ** argv)
+void cache_update(const char* path)
 {
-    std::filesystem::path current_path = argv[0];
+    std::filesystem::path current_path = path;
     while (current_path.empty() == false)
     {
         std::filesystem::path target_path = current_path / "data";
@@ -20,10 +20,7 @@ int main(int argc, char ** argv)
         current_path = current_path.parent_path();
     }
 
-    resource_manager rm;
-    rm.data_path = current_path;
-
-    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{rm.data_path})
+    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{current_path})
     {
         //std::cout << dir_entry << '\n';
         if (dir_entry.is_directory())
@@ -62,9 +59,6 @@ int main(int argc, char ** argv)
         {
             metadata << "metaversion: " << 0 << "\n";
 
-            guid guid = guid_generator::new_guid();
-            metadata << "guid: " << guid.str() << "\n";
-
             std::filesystem::file_time_type filetime = std::filesystem::last_write_time(asset_path);
             long int lastwritetime = filetime.time_since_epoch().count();
             metadata << "timecreated: " << lastwritetime << "\n";
@@ -75,5 +69,15 @@ int main(int argc, char ** argv)
         metadata.close();
     }
 
-    return 0;
+    std::filesystem::path build_path = path;
+    build_path = build_path.parent_path();
+
+    std::ofstream project_settings (build_path / "project_settings.txt");
+    {
+        project_settings << current_path.parent_path().filename() << std::endl;
+        project_settings << current_path << std::endl;
+    }
+    project_settings.close();
 }
+
+#endif //BESKAR_EDITOR_H

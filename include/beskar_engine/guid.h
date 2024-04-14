@@ -5,7 +5,6 @@
 
 #ifdef __APPLE__
 #include <CoreFoundation/CFUUID.h>
-#elif
 #endif
 
 class guid
@@ -68,6 +67,7 @@ class guid_generator
 public:
     static const guid new_guid()
     {
+#ifdef __APPLE__
         CFUUIDRef uuid = CFUUIDCreate(NULL);
         CFUUIDBytes uuid_bytes = CFUUIDGetUUIDBytes(uuid);
         CFRelease(uuid);
@@ -95,6 +95,9 @@ public:
         };
 
         return guid(std::move(bytes));
+#else
+        return guid(std::array<unsigned char, 16>());
+#endif
     };
 };
 
