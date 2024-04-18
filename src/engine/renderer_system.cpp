@@ -1,8 +1,6 @@
-#define STB_IMAGE_IMPLEMENTATION
+#include "beskar_engine/renderer_system.h"
 
-#include "beskar_engine/gl_renderer.h"
-
-#include "stb_image.h"
+#include <iostream>
 #include "GL/glew.h"
 
 batch_command::batch_command(int capacity) : vertex_capacity(capacity), vertex_count(0), indices_count(0)
@@ -31,7 +29,7 @@ batch_command::batch_command(int capacity) : vertex_capacity(capacity), vertex_c
     indices = static_cast<unsigned int *>(malloc(vertex_capacity * 2 * sizeof(unsigned int)));
 }
 
-gl_renderer::gl_renderer()
+renderer_system::renderer_system()
 {
     if(glewInit() != GLEW_OK)
     {
@@ -43,40 +41,14 @@ gl_renderer::gl_renderer()
     batch_cmd = new batch_command(1000);
 }
 
-gl_renderer::~gl_renderer()
+renderer_system::~renderer_system()
 {
     free(batch_cmd->vertices);
     free(batch_cmd->indices);
     delete batch_cmd;
 }
 
-std::unique_ptr<gl_shader> gl_renderer::create_shader(const char* vert_source, const char* frag_source)
-{
-    auto shader_instance = std::make_unique<gl_shader>(vert_source, frag_source);
-    return shader_instance;
-}
-
-std::unique_ptr<gl_mesh> gl_renderer::create_mesh(const float* vertices, unsigned long vert_length, const unsigned int* indices, unsigned long ind_length, const float* tex_coords, unsigned long tex_coords_length)
-{
-    auto mesh_instance = std::make_unique<gl_mesh>(vertices, vert_length, indices, ind_length, tex_coords, tex_coords_length);
-    return mesh_instance;
-}
-
-std::unique_ptr<gl_texture> gl_renderer::create_texture(const char* path)
-{
-    int width, height, channels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load(path, &width, &height, &channels, 0);
-    if(!data)
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    auto texture_instance = std::make_unique<gl_texture>(width, height, channels, data);
-    stbi_image_free(data);
-    return texture_instance;
-}
-
-void gl_renderer::push_quad(glm::vec2 position, glm::vec2 scale, const float* tex_coords)
+void renderer_system::push_quad(glm::vec2 position, glm::vec2 scale, const float* tex_coords)
 {
     if(batch_cmd->vertex_count == batch_cmd->vertex_capacity)
     {
@@ -100,7 +72,7 @@ void gl_renderer::push_quad(glm::vec2 position, glm::vec2 scale, const float* te
     }
 }
 
-void gl_renderer::draw()
+void renderer_system::draw()
 {
     if(batch_cmd->vertex_count == 0) return;
 

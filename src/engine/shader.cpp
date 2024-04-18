@@ -1,32 +1,10 @@
-#include "beskar_engine/gl_shader.h"
+#include "beskar_engine/shader.h"
 
 #include <iostream>
 #include "glm/gtc/type_ptr.hpp"
 #include "GL/glew.h"
 
-const char* STANDARD_VERT_SOURCE = "#version 330 core\n"
-    "layout (location = 0) in vec2 a_vert;\n"
-    "layout (location = 1) in vec2 a_tex;\n"
-    "out vec2 v_tex;\n"
-    "uniform mat4 u_view;\n"
-    "uniform mat4 u_projection;\n"
-    "uniform mat4 u_model;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = u_projection * u_view * u_model * vec4(a_vert.xy, 0.0f, 1.0f);\n"
-    "   v_tex = a_tex;\n"
-    "}\0";
-const char* STANDARD_FRAG_SOURCE = "#version 330 core\n"
-    "out vec4 o_color;\n"
-    "in vec2 v_tex;\n"
-    "uniform sampler2D u_texture;\n"
-    "void main()\n"
-    "{\n"
-    "   o_color = texture(u_texture, v_tex);\n"
-    //"   o_color = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n"
-    "}\0";
-
-gl_shader::gl_shader(const char* vert_source, const char* frag_source)
+shader::shader(const char* vert_source, const char* frag_source)
 {
     m_program = glCreateProgram();
 
@@ -72,18 +50,24 @@ gl_shader::gl_shader(const char* vert_source, const char* frag_source)
     glDeleteShader(fragment_shader);
 }
 
-gl_shader::~gl_shader()
+shader::~shader()
 {
     glDeleteProgram(m_program);
 }
 
-void gl_shader::use()
+void shader::use()
 {
     glUseProgram(m_program);
 }
 
-void gl_shader::set_uniform_mat4(const char *name, glm::mat4 value)
+void shader::set_uniform_mat4(const char *name, glm::mat4 value)
 {
     unsigned int location = glGetUniformLocation(m_program, name);
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void shader::set_uniform_4fv(const char *name, float value[4])
+{
+    unsigned int location = glGetUniformLocation(m_program, name);
+    glUniform4fv(location, 1, value);
 }

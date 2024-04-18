@@ -1,8 +1,8 @@
-#ifndef BESKAR_APPLICATION_H
-#define BESKAR_APPLICATION_H
+#ifndef BESKAR_ENGINE_APPLICATION_H
+#define BESKAR_ENGINE_APPLICATION_H
 
-#include "../../src/editor/imgui/imgui.h"
-#include <filesystem>
+#include "beskar_engine/resource_system.h"
+#include "beskar_engine/renderer_system.h"
 
 class application
 {
@@ -16,10 +16,11 @@ public:
     void gui();
 
     int width, height;
-    std::filesystem::path data_path;
-    std::filesystem::path persistent_data_path;
+
+    resource_system* resource_system;
+    renderer_system* renderer_system;
 };
 
 application* beskar_main(int argc, char** argv);
 
-#endif //BESKAR_APPLICATION_H
+#endif //BESKAR_ENGINE_APPLICATION_H

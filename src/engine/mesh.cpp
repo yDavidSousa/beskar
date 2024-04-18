@@ -1,8 +1,8 @@
-#include "beskar_engine/gl_mesh.h"
+#include "beskar_engine/mesh.h"
 
 #include "GL/glew.h"
 
-gl_mesh::gl_mesh(const float* vertices, unsigned int vert_length, const unsigned int* indices, unsigned int ind_length, const float* tex_coords, unsigned int tex_coords_length)
+mesh::mesh(const float* vertices, unsigned int vert_length, const unsigned int* indices, unsigned int ind_length, const float* tex_coords, unsigned int tex_coords_length)
     : vertices_length(vert_length), indices_length(ind_length), tex_coords_length(tex_coords_length)
 {
     glGenVertexArrays(1, &vao);
@@ -43,7 +43,7 @@ gl_mesh::gl_mesh(const float* vertices, unsigned int vert_length, const unsigned
     glBindVertexArray(0);
 }
 
-gl_mesh::~gl_mesh()
+mesh::~mesh()
 {
     if (ibo) glDeleteBuffers(1, &ibo);
     if (vbo_vertices) glDeleteBuffers(1, &vbo_vertices);
@@ -51,7 +51,7 @@ gl_mesh::~gl_mesh()
     glDeleteVertexArrays(1, &vao);
 }
 
-void gl_mesh::draw()
+void mesh::draw()
 {
     glBindVertexArray(vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);

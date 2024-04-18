@@ -1,41 +1,24 @@
-cmake_minimum_required (VERSION 3.5)
-
-project (beskar_engine)
-
-# DEPENDENCIES DIRECTORIES
-set(DEPS_ROOT_DIR "../../deps")
-set(DEPS_INCLUDE_DIR "${DEPS_ROOT_DIR}/include")
-set(DEPS_LIBRARIES_DIR "${DEPS_ROOT_DIR}/lib/")
-
 set(BESKAR_ENGINE_SRC
-        ../editor/imgui/imgui_impl_opengl3.h
-        ../editor/imgui/imgui_impl_opengl3.cpp
-        ../editor/imgui/imgui_impl_opengl3_loader.h
-        ../editor/imgui/imgui_impl_glfw.h
-        ../editor/imgui/imgui_impl_glfw.cpp
-        ../editor/imgui/imgui.h
-        ../editor/imgui/imgui.cpp
-        ../editor/imgui/imgui_draw.cpp
-        ../editor/imgui/imgui_tables.cpp
-        ../editor/imgui/imgui_widgets.cpp
-        ../editor/imgui/imgui_demo.cpp
-        asset/mesh_asset.cpp
-        asset/sprite_asset.cpp
-        graphic/gl_texture.cpp
-        graphic/gl_renderer.cpp
-        graphic/gl_shader.cpp
-        graphic/gl_mesh.cpp
+        texture.cpp
+        shader.cpp
+        mesh.cpp
+        resource_system.cpp
+        renderer_system.cpp
         application.cpp
 )
 
 add_library(beskar_engine STATIC)
 target_sources(beskar_engine PRIVATE ${BESKAR_ENGINE_SRC}) # no need to add headers here, only sources are required
 
+if(DEFINED BESKAR_EDITOR)
+    target_compile_definitions(beskar_engine PUBLIC BESKAR_EDITOR)
+endif ()
+
 target_include_directories(beskar_engine
     PRIVATE
         .. # where the library itself will look for its internal headers
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include> # where top-level project will look for the library's public headers
+        $<BUILD_INTERFACE:${BESKAR_ENGINE_ROOT_DIR}/include> # where top-level project will look for the library's public headers
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}> # where external projects will look for the library's public headers
 )
 
