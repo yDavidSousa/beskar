@@ -114,11 +114,11 @@ unsigned int resource_system::load_texture(const char* path)
     resource_metadata resource_metadata = _guid_resource_pair[uid];
     texture_metadata metadata = _texture_cache[uid];
 
-    std::string file_path = resource_path / resource_metadata.relative_path;
+    std::filesystem::path file_path = resource_path / resource_metadata.relative_path;
 
     int width, height, channels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char *data = stbi_load(file_path.c_str(), &width, &height, &channels, 0);
+    unsigned char *data = stbi_load(file_path.string().c_str(), &width, &height, &channels, 0);
     if(!data)
     {
         std::cout << "Failed to load texture" << std::endl;
@@ -129,7 +129,7 @@ unsigned int resource_system::load_texture(const char* path)
     _guid_resource_pair[uid] = resource_metadata;
 
     unsigned int handle = 0;
-    unsigned short index = _textures_loaded.size();
+    unsigned short index = static_cast<unsigned short>(_textures_loaded.size());
     _textures_loaded.push_back(texture_instance);
 
     stbi_image_free(data);
@@ -191,7 +191,7 @@ unsigned int resource_system::load_shader(const char* path)
 
     resource_metadata metadata = _guid_resource_pair[uid];
 
-    std::string file_path = resource_path / metadata.relative_path;
+    std::filesystem::path file_path = resource_path / metadata.relative_path;
     std::ifstream file(file_path);
     if (file.is_open() == false)
     {
@@ -233,7 +233,7 @@ unsigned int resource_system::load_shader(const char* path)
     _guid_resource_pair[uid] = metadata;
 
     shader* shader_instance = new shader(vert_source.c_str(), frag_source.c_str());
-    unsigned short index = _shaders_loaded.size();
+    unsigned short index = static_cast<unsigned short>(_shaders_loaded.size());
     _shaders_loaded.push_back(shader_instance);
 
     unsigned int handle = 0;

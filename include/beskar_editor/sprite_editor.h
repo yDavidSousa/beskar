@@ -21,8 +21,8 @@ std::vector<sprite_metadata> sprite_slice_count(int tex_width, int tex_height, i
             sprite_metadata sprite;
             sprite.x = x;
             sprite.y = y;
-            sprite.w = width;
-            sprite.h = height;
+            sprite.w = static_cast<int>(width);
+            sprite.h = static_cast<int>(height);
             sprites.push_back(sprite);
             x = (x + width) + spacing.x;
         }

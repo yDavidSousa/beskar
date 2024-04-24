@@ -16,8 +16,8 @@ void create_project_settings(std::filesystem::path app_path, std::filesystem::pa
 {
     std::ofstream project_settings (app_path / "project_settings.txt");
     {
-        project_settings << "projectName: " << project_path.filename().c_str() << std::endl;
-        project_settings << "projectPath: " << project_path.c_str() << std::endl;
+        project_settings << "projectName: " << project_path.filename().string() << std::endl;
+        project_settings << "projectPath: " << project_path.string() << std::endl;
     }
     project_settings.close();
 }
@@ -42,17 +42,17 @@ void create_metadata(std::filesystem::path resources_dir, std::filesystem::path 
         metadata << "filePath: " << relative_path << std::endl;
 
         struct stat statFile;
-        stat(metadata_path.c_str(), &statFile);
+        stat(metadata_path.string().c_str(), &statFile);
         metadata << "timeCreated: " << statFile.st_ctime << std::endl;
 
-        std::string extension = file_path.extension();
+        std::string extension = file_path.extension().string();
         if(extension == ".png")
         {
             metadata << "textureImporter: " << std::endl;
 
             int width, height, channels;
             stbi_set_flip_vertically_on_load(true);
-            unsigned char *data = stbi_load(file_path.c_str(), &width, &height, &channels, 0);
+            unsigned char *data = stbi_load(file_path.string().c_str(), &width, &height, &channels, 0);
             if(!data)
             {
                 std::cout << "Failed to load texture" << std::endl;
